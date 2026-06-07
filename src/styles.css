@@ -90,7 +90,7 @@ textarea {
 
 .workspace {
   display: grid;
-  grid-template-columns: 340px minmax(920px, 1fr);
+  grid-template-columns: 360px minmax(900px, 1fr);
   gap: 0;
   align-items: stretch;
   min-height: calc(100vh - 68px);
@@ -120,7 +120,7 @@ textarea {
 }
 
 .input-panel .zone {
-  padding: 18px 20px;
+  padding: 16px 18px;
 }
 
 .output-panel .zone {
@@ -302,7 +302,8 @@ textarea {
 }
 
 .table-wrap {
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   max-height: 360px;
   margin-top: 10px;
   border: 1px solid var(--line);
@@ -311,6 +312,7 @@ textarea {
 
 table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
@@ -318,25 +320,27 @@ th,
 td {
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  padding: 7px;
+  padding: 5px 4px;
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
 }
 
 th {
   background: #f4f7fa;
   color: #69788d;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 800;
+  line-height: 1.15;
 }
 
 td input {
   width: 100%;
-  min-width: 52px;
-  min-height: 30px;
-  padding: 5px;
+  min-width: 0;
+  min-height: 28px;
+  padding: 4px 2px;
   text-align: center;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 td input:focus,
