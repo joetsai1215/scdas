@@ -90,7 +90,7 @@ textarea {
 
 .workspace {
   display: grid;
-  grid-template-columns: 420px minmax(920px, 1fr);
+  grid-template-columns: 340px minmax(920px, 1fr);
   gap: 0;
   align-items: stretch;
   min-height: calc(100vh - 68px);
@@ -115,8 +115,12 @@ textarea {
 }
 
 .zone {
-  padding: 26px;
+  padding: 20px;
   border-bottom: 1px solid var(--line);
+}
+
+.input-panel .zone {
+  padding: 18px 20px;
 }
 
 .output-panel .zone {
@@ -138,13 +142,13 @@ textarea {
   justify-content: space-between;
   gap: 12px;
   min-height: 34px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .zone-header h2 {
   margin: 0;
   color: #536174;
-  font-size: 18px;
+  font-size: 16px;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -155,7 +159,7 @@ textarea {
 
 .radio-stack {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .radio-stack label {
@@ -163,12 +167,12 @@ textarea {
   align-items: center;
   gap: 11px;
   color: #516177;
-  font-size: 20px;
+  font-size: 17px;
 }
 
 .radio-stack input {
-  width: 19px;
-  height: 19px;
+  width: 17px;
+  height: 17px;
   accent-color: var(--blue);
 }
 
@@ -177,15 +181,15 @@ textarea {
 }
 
 .muted-note {
-  margin: 0 0 18px;
+  margin: 0 0 12px;
   color: var(--muted);
   line-height: 1.45;
 }
 
 .variable-grid {
   display: grid;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .variable-grid label,
@@ -208,16 +212,16 @@ select {
 
 .variable-grid input {
   width: 100%;
-  min-height: 48px;
-  padding: 8px 14px;
-  font-size: 22px;
+  min-height: 40px;
+  padding: 7px 10px;
+  font-size: 18px;
 }
 
 .api-key-box {
   display: grid;
-  gap: 10px;
-  margin-bottom: 18px;
-  padding: 12px;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: #fff;
@@ -225,8 +229,8 @@ select {
 
 .api-key-box input {
   width: 100%;
-  min-height: 40px;
-  padding: 8px 10px;
+  min-height: 36px;
+  padding: 7px 9px;
 }
 
 .api-actions {
@@ -285,8 +289,8 @@ select {
 textarea {
   display: block;
   width: 100%;
-  min-height: 112px;
-  padding: 10px;
+  min-height: 88px;
+  padding: 9px;
   resize: vertical;
   line-height: 1.45;
 }
@@ -299,8 +303,8 @@ textarea {
 
 .table-wrap {
   overflow: auto;
-  max-height: 420px;
-  margin-top: 14px;
+  max-height: 360px;
+  margin-top: 10px;
   border: 1px solid var(--line);
   background: #fff;
 }
@@ -314,7 +318,7 @@ th,
 td {
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  padding: 9px;
+  padding: 7px;
   text-align: center;
   white-space: nowrap;
 }
@@ -329,10 +333,10 @@ th {
 td input {
   width: 100%;
   min-width: 52px;
-  min-height: 34px;
+  min-height: 30px;
   padding: 5px;
   text-align: center;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 td input:focus,
