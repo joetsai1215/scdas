@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sequential Circuit Design Automation System</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>Sequential Circuit Design Automation System</h1>
+          <p>AI-Enhanced state table, flip-flop equations, K-map, and circuit diagram prototype</p>
+        </div>
+        <div class="status-pill" id="statusText">Ready</div>
+      </header>
+
+      <section class="workspace">
+        <aside class="panel input-panel" aria-label="Input and configuration">
+          <section class="zone">
+            <div class="zone-header">
+              <span class="zone-index">1</span>
+              <h2>Model Type</h2>
+            </div>
+            <div class="segmented-control" role="radiogroup" aria-label="Model Type">
+              <label>
+                <input type="radio" name="modelType" value="mealy" checked />
+                <span>Mealy Model</span>
+              </label>
+              <label>
+                <input type="radio" name="modelType" value="moore" />
+                <span>Moore Model</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="zone">
+            <div class="zone-header">
+              <span class="zone-index">2</span>
+              <h2>Flip-Flop Type</h2>
+            </div>
+            <div class="segmented-control" role="radiogroup" aria-label="Flip-Flop Type">
+              <label>
+                <input type="radio" name="ffType" value="jk" checked />
+                <span>JK Flip-Flop</span>
+              </label>
+              <label>
+                <input type="radio" name="ffType" value="t" />
+                <span>T Flip-Flop</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="zone smart-zone">
+            <div class="zone-header">
+              <span class="zone-index">3</span>
+              <h2>Smart Input Area</h2>
+            </div>
+            <div class="tabbar" role="tablist">
+              <button class="tab-button active" data-tab="text" type="button">Text Description</button>
+              <button class="tab-button" data-tab="manual" type="button">Manual Table</button>
+            </div>
+
+            <div class="tab-pane active" id="textPane">
+              <textarea id="problemText" spellcheck="false">A Mealy system that produces a 1 output iff the input has been 1 for three or more consecutive clock times. Overlapping sequences are allowed.</textarea>
+              <button class="primary-button" id="parseTextButton" type="button">Parse to State Table</button>
+            </div>
+
+            <div class="tab-pane" id="manualPane">
+              <p class="muted-note">Edit the normalized state table below, then generate the circuit.</p>
+            </div>
+          </section>
+
+          <section class="zone state-table-zone">
+            <div class="zone-header">
+              <span class="zone-index">4</span>
+              <h2>State Table Display / Edit</h2>
+            </div>
+            <div class="table-actions">
+              <button class="secondary-button" id="clearTableButton" type="button">Clear Table</button>
+              <button class="secondary-button" id="loadExampleButton" type="button">Load Example</button>
+              <button class="secondary-button" id="addStateButton" type="button">Add State</button>
+            </div>
+            <div class="table-wrap">
+              <table class="state-table">
+                <thead id="stateTableHead"></thead>
+                <tbody id="stateTableBody"></tbody>
+              </table>
+            </div>
+            <div class="assignment-wrap">
+              <h3>State Assignment</h3>
+              <div id="assignmentTable" class="assignment-grid"></div>
+            </div>
+            <button class="generate-button" id="generateButton" type="button">Generate Circuit</button>
+          </section>
+        </aside>
+
+        <section class="panel output-panel" aria-label="Analysis and output">
+          <section class="zone equations-zone">
+            <div class="zone-header">
+              <span class="zone-index">5</span>
+              <h2>Equations &amp; K-Map</h2>
+            </div>
+            <div class="result-layout">
+              <div class="equation-list" id="equationList"></div>
+              <div class="kmap-panel">
+                <label class="field-label" for="equationSelect">K-map target</label>
+                <select id="equationSelect"></select>
+                <div id="kmapView" class="kmap-view"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="zone diagram-zone">
+            <div class="zone-header">
+              <span class="zone-index">6</span>
+              <h2>Sequential Circuit Diagram</h2>
+              <div class="diagram-tools">
+                <button class="icon-button" id="zoomOutButton" type="button" title="Zoom out">−</button>
+                <button class="icon-button" id="zoomResetButton" type="button" title="Reset zoom">1:1</button>
+                <button class="icon-button" id="zoomInButton" type="button" title="Zoom in">+</button>
+              </div>
+            </div>
+            <div class="diagram-stage" id="diagramStage">
+              <svg id="circuitSvg" role="img" aria-label="Sequential circuit diagram"></svg>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
