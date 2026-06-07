@@ -10,6 +10,9 @@ const state = {
 
 const els = {
   statusText: document.querySelector("#statusText"),
+  modelBadge: document.querySelector("#modelBadge"),
+  ffBadge: document.querySelector("#ffBadge"),
+  modelHint: document.querySelector("#modelHint"),
   stateTableHead: document.querySelector("#stateTableHead"),
   stateTableBody: document.querySelector("#stateTableBody"),
   assignmentTable: document.querySelector("#assignmentTable"),
@@ -27,6 +30,7 @@ function init() {
     input.addEventListener("change", () => {
       state.modelType = input.value;
       state.rows = structuredClone(state.modelType === "moore" ? examples.mooreThreeOnes.rows : examples.mealyThreeOnes.rows);
+      renderBadges();
       renderStateTable();
       clearResults("Model changed. Example table loaded.");
     });
@@ -35,6 +39,7 @@ function init() {
   document.querySelectorAll("[name='ffType']").forEach((input) => {
     input.addEventListener("change", () => {
       state.ffType = input.value;
+      renderBadges();
       clearResults("Flip-flop type changed.");
     });
   });
@@ -87,8 +92,18 @@ function init() {
   });
 
   bindDiagramPan(els.circuitSvg);
+  renderBadges();
   renderStateTable();
   renderEmptyResults();
+}
+
+function renderBadges() {
+  els.modelBadge.textContent = state.modelType === "mealy" ? "MEALY Model" : "MOORE Model";
+  els.ffBadge.textContent = state.ffType === "jk" ? "JK Flip-Flop" : "T Flip-Flop";
+  els.modelHint.textContent =
+    state.modelType === "mealy"
+      ? "Mealy: output depends on present state and input."
+      : "Moore: output depends only on the present state.";
 }
 
 function switchTab(tabName) {
@@ -167,53 +182,79 @@ function renderAnalysis() {
     .map(([stateName, bits]) => `<div>${stateName}</div><strong>${bits}</strong>`)
     .join("");
 
-  els.equationList.innerHTML = analysis.equations
-    .map(
-      (equation) => `
-        <article class="equation-card">
-          <strong>${equation.name}</strong>
-          <div>${equation.expression}</div>
-        </article>
-      `
-    )
-    .join("");
+  const ffEquations = analysis.equations.filter((equation) => equation.type === "ff-input");
+  const outputEquation = analysis.equations.find((equation) => equation.name === "Z");
+
+  els.equationList.innerHTML = `
+    <div class="equation-heading">Flip-Flop Input Equations and Outputs (Simplified)</div>
+    <div class="state-variable-note">State Variables: ${analysis.variables.state.join(" ")}</div>
+    <table class="equation-table">
+      <thead>
+        <tr><th>Type</th><th>Input</th><th>Equation</th></tr>
+      </thead>
+      <tbody>
+        ${ffEquations
+          .map(
+            (equation) => `
+              <tr>
+                <td>FF for ${equation.name.at(-1)}</td>
+                <td class="math">${formatEquationName(equation.name)}</td>
+                <td class="math">${formatEquationName(equation.name)} = ${formatExpression(equation.expression)}</td>
+              </tr>
+            `
+          )
+          .join("")}
+        <tr>
+          <td>Output</td>
+          <td class="math">Z</td>
+          <td class="math">Z = ${formatExpression(outputEquation.expression)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
 
   els.equationSelect.innerHTML = analysis.equations
     .map((equation) => `<option value="${equation.name}">${equation.name}</option>`)
     .join("");
-  renderSelectedKMap();
+  renderAllKMaps();
   resetDiagramView();
   renderCircuitDiagram(els.circuitSvg, analysis);
 }
 
-function renderSelectedKMap() {
+function renderAllKMaps() {
   if (!state.analysis) return;
-  const selected = els.equationSelect.value || state.analysis.equations[0]?.name;
-  const kmap = state.analysis.kMaps[selected];
-  if (!kmap) return;
-
   els.kmapView.innerHTML = `
-    <div class="kmap-grid">
-      <div class="kmap-cell header">${kmap.rowVariable} \\ ${kmap.columnVariables}</div>
-      ${kmap.columnLabels.map((label) => `<div class="kmap-cell header">${label}</div>`).join("")}
-      ${kmap.rowLabels
-        .map(
-          (rowLabel, rowIndex) => `
-            <div class="kmap-cell header">${rowLabel}</div>
-            ${kmap.columnLabels
-              .map((_, columnIndex) => {
-                const cell = kmap.cells[rowIndex * kmap.columnLabels.length + columnIndex];
-                const className = cell.value === "1" ? "one" : cell.value === "X" ? "dc" : "";
-                return `<div class="kmap-cell ${className}" title="${cell.bits}">${cell.value}</div>`;
-              })
-              .join("")}
-          `
-        )
-        .join("")}
+    <div class="kmap-card-grid">
+      ${state.analysis.equations.map((equation) => renderKMapCard(equation, state.analysis.kMaps[equation.name])).join("")}
     </div>
-    <article class="equation-card">
-      <strong>Simplified Result</strong>
-      <div>${selected} = ${kmap.expression}</div>
+  `;
+}
+
+function renderSelectedKMap() {
+  renderAllKMaps();
+}
+
+function renderKMapCard(equation, kmap) {
+  const twoColumn = kmap.columnLabels.length === 2 ? " two-col" : "";
+  return `
+    <article class="kmap-card">
+      <div class="kmap-title-row">
+        <span>${formatEquationName(equation.name)}</span>
+        <span>${formatExpression(equation.expression)}</span>
+      </div>
+      <div class="mini-kmap${twoColumn}">
+        ${kmap.cells
+          .map((cell) => {
+            const className = cell.value === "1" ? "one" : cell.value === "X" ? "dc" : "";
+            return `
+              <div class="mini-kmap-cell ${className}" title="${cell.bits}">
+                <span class="minterm-label">m${Number.parseInt(cell.bits, 2)}</span>
+                <span>${cell.value === "X" ? "-" : cell.value}</span>
+              </div>
+            `;
+          })
+          .join("")}
+      </div>
     </article>
   `;
 }
@@ -232,6 +273,25 @@ function renderEmptyResults() {
   text.setAttribute("font-size", "16");
   text.textContent = "Circuit diagram appears after generation.";
   els.circuitSvg.appendChild(text);
+}
+
+function formatEquationName(name) {
+  const match = name.match(/^([JKT])Q(\d+)$/);
+  if (!match) return name;
+  return `${match[1]}<sub>${stateBitLabel(match[2])}</sub>`;
+}
+
+function formatExpression(expression) {
+  return expression
+    .replaceAll("Q1", "B")
+    .replaceAll("Q0", "A")
+    .replaceAll("'", "'")
+    .replace(/\b([ABX])'/g, "$1'")
+    .replace(/\+/g, " + ");
+}
+
+function stateBitLabel(bit) {
+  return bit === "1" ? "B" : bit === "0" ? "A" : bit;
 }
 
 function clearResults(message) {
