@@ -188,13 +188,15 @@ textarea {
   margin-bottom: 18px;
 }
 
-.variable-grid label {
+.variable-grid label,
+.api-key-box label {
   display: grid;
   gap: 7px;
   color: var(--muted);
 }
 
 .variable-grid input,
+.api-key-box input,
 textarea,
 td input,
 select {
@@ -209,6 +211,35 @@ select {
   min-height: 48px;
   padding: 8px 14px;
   font-size: 22px;
+}
+
+.api-key-box {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.api-key-box input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+}
+
+.api-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.key-note {
+  margin: 0;
+  color: #7a8799;
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .tabbar,

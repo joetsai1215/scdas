@@ -1,5 +1,6 @@
 import { analyzeCircuit, examples, parseDescriptionToTable } from "./logic.js";
 import { bindDiagramPan, renderCircuitDiagram, resetDiagramView, zoomDiagram } from "./diagram.js";
+import { parseStateTableWithOpenAI } from "./openaiParser.js";
 
 const state = {
   modelType: "mealy",
@@ -21,6 +22,8 @@ const els = {
   kmapView: document.querySelector("#kmapView"),
   circuitSvg: document.querySelector("#circuitSvg"),
   problemText: document.querySelector("#problemText"),
+  apiKeyInput: document.querySelector("#apiKeyInput"),
+  apiModelInput: document.querySelector("#apiModelInput"),
 };
 
 init();
@@ -72,13 +75,26 @@ function init() {
   });
 
   document.querySelector("#parseTextButton").addEventListener("click", () => {
-    try {
-      state.rows = parseDescriptionToTable(els.problemText.value, state.modelType);
-      renderStateTable();
-      clearResults("Description parsed locally.");
-    } catch (error) {
-      setStatus(error.message, true);
+    parseTextDescription();
+  });
+
+  document.querySelector("#saveApiKeyButton").addEventListener("click", () => {
+    const key = els.apiKeyInput.value.trim();
+    if (!key) {
+      setStatus("Enter an API key before saving.", true);
+      return;
     }
+    localStorage.setItem("scdas_openai_api_key", key);
+    localStorage.setItem("scdas_openai_model", els.apiModelInput.value.trim() || "gpt-4o-mini");
+    setStatus("API key saved locally.");
+  });
+
+  document.querySelector("#clearApiKeyButton").addEventListener("click", () => {
+    localStorage.removeItem("scdas_openai_api_key");
+    localStorage.removeItem("scdas_openai_model");
+    els.apiKeyInput.value = "";
+    els.apiModelInput.value = "gpt-4o-mini";
+    setStatus("API key cleared.");
   });
 
   document.querySelector("#generateButton").addEventListener("click", generateCircuit);
@@ -92,9 +108,15 @@ function init() {
   });
 
   bindDiagramPan(els.circuitSvg);
+  loadApiSettings();
   renderBadges();
   renderStateTable();
   renderEmptyResults();
+}
+
+function loadApiSettings() {
+  els.apiKeyInput.value = localStorage.getItem("scdas_openai_api_key") ?? "";
+  els.apiModelInput.value = localStorage.getItem("scdas_openai_model") ?? "gpt-4o-mini";
 }
 
 function renderBadges() {
@@ -162,6 +184,47 @@ function generateCircuit() {
     setStatus("Circuit generated.");
   } catch (error) {
     setStatus(error.message, true);
+  }
+}
+
+async function parseTextDescription() {
+  const problemText = els.problemText.value.trim();
+  const apiKey = els.apiKeyInput.value.trim();
+  const model = els.apiModelInput.value.trim() || "gpt-4o-mini";
+
+  if (!problemText) {
+    setStatus("Enter a problem description first.", true);
+    return;
+  }
+
+  if (!apiKey) {
+    try {
+      state.rows = parseDescriptionToTable(problemText, state.modelType);
+      renderStateTable();
+      clearResults("Parsed by local example parser. Add an API key for open-ended AI parsing.");
+    } catch (error) {
+      setStatus("Enter an OpenAI API key to parse open-ended descriptions.", true);
+    }
+    return;
+  }
+
+  setStatus("AI parsing...");
+  document.querySelector("#parseTextButton").disabled = true;
+
+  try {
+    const result = await parseStateTableWithOpenAI({
+      apiKey,
+      model,
+      problemText,
+      modelType: state.modelType,
+    });
+    state.rows = result.rows;
+    renderStateTable();
+    clearResults(result.notes ? `AI parsed: ${result.notes}` : "AI parsed state table.");
+  } catch (error) {
+    setStatus(error.message, true);
+  } finally {
+    document.querySelector("#parseTextButton").disabled = false;
   }
 }
 

@@ -9,11 +9,16 @@
   <body>
     <main class="app-shell">
       <header class="topbar">
-        <div>
+        <div class="brand-lockup">
+          <span class="brand-ring"></span>
           <h1>Sequential Circuit Design Automation System</h1>
-          <p>AI-Enhanced state table, flip-flop equations, K-map, and circuit diagram prototype</p>
         </div>
-        <div class="status-pill" id="statusText">Ready</div>
+        <div class="top-meta">
+          <span id="modelBadge">MEALY Model</span>
+          <span id="ffBadge">JK Flip-Flop</span>
+          <span>CLK</span>
+          <div class="status-pill" id="statusText">Ready</div>
+        </div>
       </header>
 
       <section class="workspace">
@@ -23,7 +28,7 @@
               <span class="zone-index">1</span>
               <h2>Model Type</h2>
             </div>
-            <div class="segmented-control" role="radiogroup" aria-label="Model Type">
+            <div class="radio-stack" role="radiogroup" aria-label="Model Type">
               <label>
                 <input type="radio" name="modelType" value="mealy" checked />
                 <span>Mealy Model</span>
@@ -40,7 +45,7 @@
               <span class="zone-index">2</span>
               <h2>Flip-Flop Type</h2>
             </div>
-            <div class="segmented-control" role="radiogroup" aria-label="Flip-Flop Type">
+            <div class="radio-stack" role="radiogroup" aria-label="Flip-Flop Type">
               <label>
                 <input type="radio" name="ffType" value="jk" checked />
                 <span>JK Flip-Flop</span>
@@ -49,13 +54,47 @@
                 <input type="radio" name="ffType" value="t" />
                 <span>T Flip-Flop</span>
               </label>
+              <label class="disabled-option">
+                <input type="radio" disabled />
+                <span>SR Flip-Flop</span>
+              </label>
+              <label class="disabled-option">
+                <input type="radio" disabled />
+                <span>D Flip-Flop</span>
+              </label>
             </div>
           </section>
 
           <section class="zone smart-zone">
             <div class="zone-header">
               <span class="zone-index">3</span>
-              <h2>Smart Input Area</h2>
+              <h2>State Table Input</h2>
+            </div>
+            <p class="muted-note" id="modelHint">Mealy: output depends on present state and input.</p>
+            <div class="variable-grid">
+              <label>
+                <span>Input variables</span>
+                <input id="inputVariables" value="X" />
+              </label>
+              <label>
+                <span>Output variables</span>
+                <input id="outputVariables" value="Z" />
+              </label>
+            </div>
+            <div class="api-key-box">
+              <label>
+                <span>OpenAI API key for AI parsing</span>
+                <input id="apiKeyInput" type="password" placeholder="sk-..." autocomplete="off" />
+              </label>
+              <label>
+                <span>Model</span>
+                <input id="apiModelInput" value="gpt-4o-mini" autocomplete="off" />
+              </label>
+              <div class="api-actions">
+                <button class="secondary-button" id="saveApiKeyButton" type="button">Save Locally</button>
+                <button class="secondary-button" id="clearApiKeyButton" type="button">Clear Key</button>
+              </div>
+              <p class="key-note">The key is used from your browser for AI parsing. Do not paste a shared or instructor-owned key.</p>
             </div>
             <div class="tabbar" role="tablist">
               <button class="tab-button active" data-tab="text" type="button">Text Description</button>
@@ -73,10 +112,6 @@
           </section>
 
           <section class="zone state-table-zone">
-            <div class="zone-header">
-              <span class="zone-index">4</span>
-              <h2>State Table Display / Edit</h2>
-            </div>
             <div class="table-actions">
               <button class="secondary-button" id="clearTableButton" type="button">Clear Table</button>
               <button class="secondary-button" id="loadExampleButton" type="button">Load Example</button>
@@ -99,27 +134,24 @@
         <section class="panel output-panel" aria-label="Analysis and output">
           <section class="zone equations-zone">
             <div class="zone-header">
-              <span class="zone-index">5</span>
-              <h2>Equations &amp; K-Map</h2>
+              <span class="zone-index">4</span>
+              <h2>Output 1: K-Maps and Simplified Equations</h2>
             </div>
-            <div class="result-layout">
-              <div class="equation-list" id="equationList"></div>
-              <div class="kmap-panel">
-                <label class="field-label" for="equationSelect">K-map target</label>
-                <select id="equationSelect"></select>
-                <div id="kmapView" class="kmap-view"></div>
-              </div>
-            </div>
+            <div id="kmapView" class="kmap-view"></div>
+            <div class="equation-list" id="equationList"></div>
+            <select id="equationSelect" class="hidden-select" aria-label="K-map target"></select>
           </section>
 
           <section class="zone diagram-zone">
             <div class="zone-header">
-              <span class="zone-index">6</span>
-              <h2>Sequential Circuit Diagram</h2>
+              <span class="zone-index">5</span>
+              <h2>Output 2: Sequential Circuit Diagram</h2>
               <div class="diagram-tools">
-                <button class="icon-button" id="zoomOutButton" type="button" title="Zoom out">−</button>
-                <button class="icon-button" id="zoomResetButton" type="button" title="Reset zoom">1:1</button>
-                <button class="icon-button" id="zoomInButton" type="button" title="Zoom in">+</button>
+                <button class="icon-button" id="zoomOutButton" type="button" title="Zoom out">Zoom -</button>
+                <button class="icon-button" id="zoomResetButton" type="button" title="Reset zoom">Reset View</button>
+                <button class="icon-button" id="zoomInButton" type="button" title="Zoom in">Zoom +</button>
+                <button class="icon-button" type="button" title="Export PNG">PNG</button>
+                <button class="icon-button" type="button" title="Export SVG">SVG</button>
               </div>
             </div>
             <div class="diagram-stage" id="diagramStage">

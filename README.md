@@ -10,6 +10,7 @@ This is the first runnable web prototype for a sequential circuit design automat
 - Flip-flop types: JK and T
 - Editable state table
 - Local example parser for the "three or more consecutive 1s" problem
+- Optional OpenAI API key input for real AI text-to-state-table parsing
 - Automatic state assignment
 - Flip-flop excitation equation generation
 - K-map data display
@@ -50,7 +51,26 @@ The UI never guesses equations. Equations are derived from present-state bits, n
 
 ## Text-to-State-Table Plan
 
-The current prototype includes a local parser only for the three-consecutive-1s example. For the AI-enhanced version, add a backend endpoint:
+The prototype can now parse natural-language descriptions with a user-provided OpenAI API key. The key is entered in the browser and can be saved locally with `localStorage`.
+
+For a classroom demo on GitHub Pages, this lets each user use their own key. For a production app, use a backend proxy instead of calling the API directly from the browser.
+
+Current AI parser limits:
+
+- One binary input variable: `X`
+- One binary output variable: `Z`
+- Mealy or Moore, selected by the UI
+- The model must return a normalized state table JSON
+
+The direct browser call uses:
+
+```text
+POST https://api.openai.com/v1/responses
+```
+
+with Structured Outputs JSON schema.
+
+For a production backend version, add an endpoint:
 
 ```text
 POST /api/parse-state-table
