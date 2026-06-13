@@ -76,9 +76,9 @@ export function assignStates(rows) {
   );
 }
 
-export function analyzeCircuit(rows, modelType, ffType) {
+export function analyzeCircuit(rows, modelType, ffType, options = {}) {
   const normalizedRows = normalizeRows(rows, modelType);
-  const assignment = assignStates(normalizedRows);
+  const assignment = normalizeAssignment(normalizedRows, options.assignment);
   const stateBits = Object.values(assignment)[0].length;
   const variables = buildVariables(stateBits);
   const transitions = expandTransitions(normalizedRows, modelType, assignment);
@@ -102,6 +102,43 @@ export function analyzeCircuit(rows, modelType, ffType) {
     kMaps: Object.fromEntries(equations.map((equation) => [equation.name, buildKMap(equation, variables.ordered)])),
     graph: buildCircuitGraph(equations, variables, ffType),
   };
+}
+
+function normalizeAssignment(rows, customAssignment) {
+  if (!customAssignment) return assignStates(rows);
+
+  const stateNames = rows.map((row) => row.state);
+  const values = stateNames.map((state) => cleanToken(customAssignment[state]));
+  const bitLength = values[0]?.length;
+
+  if (!bitLength) {
+    throw new Error("State assignment is missing.");
+  }
+
+  const minimumBits = Math.max(1, Math.ceil(Math.log2(rows.length)));
+  if (bitLength < minimumBits) {
+    throw new Error(`State assignment needs at least ${minimumBits} bit(s).`);
+  }
+
+  const seen = new Set();
+  const assignment = {};
+
+  stateNames.forEach((state, index) => {
+    const bits = values[index];
+    if (!/^[01]+$/.test(bits)) {
+      throw new Error(`State ${state} has invalid assignment. Use only 0 and 1.`);
+    }
+    if (bits.length !== bitLength) {
+      throw new Error("All state assignments must have the same number of bits.");
+    }
+    if (seen.has(bits)) {
+      throw new Error(`Duplicate state assignment: ${bits}.`);
+    }
+    seen.add(bits);
+    assignment[state] = bits;
+  });
+
+  return assignment;
 }
 
 function expandTransitions(rows, modelType, assignment) {
@@ -129,7 +166,7 @@ function buildVariables(stateBits) {
 }
 
 function buildExcitationFunction(bitIndex, bitName, ffType, transitions, unusedRows, variables) {
-  const outputs = ffType === "jk" ? [`J${bitName}`, `K${bitName}`] : [`T${bitName}`];
+  const outputs = excitationOutputs(ffType, bitName);
 
   return outputs.map((name) => {
     const truthRows = [
@@ -155,9 +192,28 @@ function buildExcitationFunction(bitIndex, bitName, ffType, transitions, unusedR
   });
 }
 
+function excitationOutputs(ffType, bitName) {
+  if (ffType === "jk") return [`J${bitName}`, `K${bitName}`];
+  if (ffType === "t") return [`T${bitName}`];
+  if (ffType === "sr") return [`S${bitName}`, `R${bitName}`];
+  if (ffType === "d") return [`D${bitName}`];
+  throw new Error(`Unsupported flip-flop type: ${ffType}`);
+}
+
 function excitationValue(ffType, inputName, q, qNext) {
+  if (ffType === "d") {
+    return qNext;
+  }
+
   if (ffType === "t") {
     return q === qNext ? "0" : "1";
+  }
+
+  if (ffType === "sr") {
+    if (q === "0" && qNext === "0") return inputName === "S" ? "0" : "X";
+    if (q === "0" && qNext === "1") return inputName === "S" ? "1" : "0";
+    if (q === "1" && qNext === "0") return inputName === "S" ? "0" : "1";
+    return inputName === "S" ? "X" : "0";
   }
 
   if (inputName === "J") {

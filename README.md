@@ -7,14 +7,20 @@ This is the first runnable web prototype for a sequential circuit design automat
 - Single input: `X`
 - Single output: `Z`
 - Model types: Mealy and Moore
-- Flip-flop types: JK and T
+- Flip-flop types: JK, T, SR, and D
 - Editable state table
 - Local example parser for the "three or more consecutive 1s" problem
 - Optional OpenAI API key input for real AI text-to-state-table parsing
-- Automatic state assignment
+- Editable state assignment, with automatic assignment as the default
 - Flip-flop excitation equation generation
 - K-map data display
 - SVG circuit diagram with zoom and pan
+- Equation self-verification against the generated transition table
+- Step-by-step binary transition / excitation tables
+- Horizontal K-map derivation view with don't-care terms shown as `X`
+- State-assignment optimizer for comparing simpler equation costs
+- Input sequence simulation and Verilog export
+- Interactive waveform signal simulator with live formula updates, grid plot, and playback controls
 
 ## Run Locally
 
@@ -39,7 +45,7 @@ Pipeline:
 ```text
 state table
 → validation
-→ state assignment
+→ editable/custom state assignment
 → transition expansion
 → flip-flop excitation table
 → SOP simplification
